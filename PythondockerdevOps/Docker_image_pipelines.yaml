@@ -1,0 +1,21 @@
+trigger: none
+
+pool:
+  name: 'SelfHostedAzureUbuntuVM'
+
+variables:
+  myscript: "this is my script"
+
+steps:
+  - checkout: 'self' 
+    displayName: 'Checkout from azure repos'
+
+  - script: |
+      echo "building docker image"
+      docker build -t python-test-image .
+    displayName: 'Build docker image'
+
+  - script: |
+      echo "running docker container $(myscript)"
+      docker run --rm python-test-image
+    displayName: 'Run docker container'

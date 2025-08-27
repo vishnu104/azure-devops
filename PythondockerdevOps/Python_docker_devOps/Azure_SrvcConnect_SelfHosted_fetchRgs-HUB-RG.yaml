@@ -1,0 +1,37 @@
+trigger: none
+
+stages:
+- stage: RetrieveResourceGroup
+  displayName: 'Retrieve Resource Group Info'
+  jobs:
+  - job: FetchRG
+    displayName: 'Fetch hub-rg Info'
+    pool:
+      name: SelfHostedAzureUbuntuVM   # Your self-hosted agent pool
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Get Resource Group Info'
+      inputs:
+        azureSubscription: 'MyServiceConnectionVishnu'   # Service connection name
+        scriptType: 'bash'                               # Use 'bash' on Ubuntu
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Set variables
+          RESOURCE_GROUP="hub-rg"
+          VNET_NAME="hub-vnet"
+
+          echo "Retrieving info for VNet $VNET_NAME in RG $RESOURCE_GROUP..."
+
+          # Get VNet JSON
+          VNET_JSON=$(az network vnet show --resource-group $RESOURCE_GROUP --name $VNET_NAME --output json)
+          echo "VNet JSON: $VNET_JSON"
+
+          # Extract VNet ID
+          VNET_ID=$(echo $VNET_JSON | jq -r '.id')
+          echo "##vso[task.setvariable variable=VNET_ID]$VNET_ID"
+          echo "VNet ID: $VNET_ID"
+
+          # Extract subnet names as comma-separated list
+          SUBNETS=$(echo $VNET_JSON | jq -r '.subnets[].name' | paste -sd "," -)
+          echo "##vso[task.setvariable variable=VNET_SUBNETS]$SUBNETS"
+          echo "Subnets: $SUBNETS"

@@ -1,0 +1,20 @@
+trigger: none
+
+stages:
+- stage: RetrieveResourceGroup
+  displayName: 'Retrieve Resource Group Info'
+  jobs:
+  - job: FetchRG
+    displayName: 'Fetch NetworkWatcherRG Info'
+    pool:
+      name: SelfHostedAzureUbuntuVM   # Your self-hosted agent pool
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Get Resource Group Info'
+      inputs:
+        azureSubscription: 'MyServiceConnectionVishnu'   # Service connection name
+        scriptType: 'bash'                               # Use 'bash' on Ubuntu
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Retrieving info for Resource Group: NetworkWatcherRG"
+          az group show --name NetworkWatcherRG --output table
