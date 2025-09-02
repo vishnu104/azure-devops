@@ -1,18 +1,20 @@
 trigger: none
+pr: none
+
+# Manual trigger with parameters
+parameters:
+- name: environment
+  displayName: "Select environment"
+  type: string
+  default: "dev"
+  values:
+  - dev
+  - test
+  - prod
 
 stages:
-- stage: RetriveKeyVaultInfo
-  displayName: 'Retrieve Key vault info'
+- stage: Deploy
   jobs:
-  - job: FetchKV
-    displayName: 'Fetch hub-rg key valult Info'
-    pool:
-      name: SelfHostedAzureUbuntuVM   # Your self-hosted agent pool
+  - job: DeployJob
     steps:
-    - task: AzureKeyVault@2
-      displayName: 'Get Key Vault Info'
-      inputs:
-        azureSubscription: 'KeyVaultServiceConnectionVishnu1'   # Service connection name
-        KeyVaultName: 'hub-keyvault-104'  
-        SecretsFilter: '*'
-        
+    - script: echo "Deploying to ${{ parameters.environment }}"
