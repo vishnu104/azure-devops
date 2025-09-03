@@ -1,20 +1,62 @@
-trigger: none
+trigger: none  # disables automatic triggers, only manual
 pr: none
 
-# Manual trigger with parameters
 parameters:
-- name: environment
-  displayName: "Select environment"
-  type: string
-  default: "dev"
-  values:
-  - dev
-  - test
-  - prod
+  - name: targetServer
+    type: string
+    displayName: 'Select the target server'
+    default: 'dev-server'
+    values:
+      - dev-server
+      - test-server
+      - prod-server
+
+  - name: application
+    type: string
+    displayName: 'Select the application'
+    default: 'app1'
+    values:
+      - app1
+      - app2
+      - app3
+
+  - name: branchName
+    type: string
+    displayName: 'Which branch do you want to deploy from?'
+    default: 'main'
+    values:
+      - main
+      - develop
+      - feature-xyz
 
 stages:
 - stage: Deploy
   jobs:
-  - job: DeployJob
+  - job: CheckoutAndDeploy
     steps:
-    - script: echo "Deploying to ${{ parameters.environment }}"
+      # Checkout code from user-selected branch
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        fetchDepth: 0
+        ref: ${{ parameters.branchName }}
+
+      - script: |
+          echo "Checked out branch: ${{ parameters.branchName }}"
+        displayName: 'Show selected branch'
+
+      # Optionally, checkout main branch afterwards
+      - checkout: self
+        persistCredentials: true
+        clean: true
+        fetchDepth: 0
+        ref: main
+
+      - script: |
+          echo "Checked out branch: main"
+        displayName: 'Show main branch checkout'
+
+      # Example deployment step
+      - script: |
+          echo "Deploying ${{ parameters.application }} to ${{ parameters.targetServer }}"
+        displayName: 'Deploy Application'
