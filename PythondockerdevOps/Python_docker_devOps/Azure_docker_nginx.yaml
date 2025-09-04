@@ -1,0 +1,13 @@
+trigger:
+- none
+
+pool:
+  name: SelfHostedAzureUbuntuVM
+
+variables:
+  IMAGE_NAME: nginx:latest
+  CONTAINER_NAME: myapp
+  PORT_MAPPING: "8080:80"
+
+steps:
+- script: echo "Pipeline test"

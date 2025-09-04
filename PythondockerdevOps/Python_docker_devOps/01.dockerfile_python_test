@@ -1,0 +1,14 @@
+# Use official Python image (includes pip)
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Just to confirm pip is installed
+RUN pip --version
+
+# Run a printf command
+RUN printf "Hello from inside the Docker build!\n"
+
+# Default command
+CMD ["python3", "--version"]
