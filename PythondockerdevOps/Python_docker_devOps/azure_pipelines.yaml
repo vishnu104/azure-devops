@@ -1,62 +1,30 @@
-trigger: none  # disables automatic triggers, only manual
-pr: none
+trigger:
+- none
 
-parameters:
-  - name: targetServer
-    type: string
-    displayName: 'Select the target server'
-    default: 'dev-server'
-    values:
-      - dev-server
-      - test-server
-      - prod-server
+pool:
+  name: SelfHostedAzureUbuntuVM
 
-  - name: application
-    type: string
-    displayName: 'Select the application'
-    default: 'app1'
-    values:
-      - app1
-      - app2
-      - app3
+variables:
+  IMAGE_NAME: my-demo-app
+  IMAGE_TAG: latest
 
-  - name: branchName
-    type: string
-    displayName: 'Which branch do you want to deploy from?'
-    default: 'main'
-    values:
-      - main
-      - develop
-      - feature-xyz
+steps:
+  # Step 1: Clean up old Docker images
+  - script: |
+      echo "Cleaning up old Docker images..."
+      docker rmi -f $(docker images -q) || echo "No images to delete"
+    displayName: "Clean up existing Docker images"
 
-stages:
-- stage: Deploy
-  jobs:
-  - job: CheckoutAndDeploy
-    steps:
-      # Checkout code from user-selected branch
-      - checkout: self
-        persistCredentials: true
-        clean: true
-        fetchDepth: 0
-        ref: ${{ parameters.branchName }}
+  # Step 2: Build the Docker image
+  - script: |
+      echo "Building Docker image..."
+      docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+    displayName: "Build Docker image"
 
-      - script: |
-          echo "Checked out branch: ${{ parameters.branchName }}"
-        displayName: 'Show selected branch'
-
-      # Optionally, checkout main branch afterwards
-      - checkout: self
-        persistCredentials: true
-        clean: true
-        fetchDepth: 0
-        ref: main
-
-      - script: |
-          echo "Checked out branch: main"
-        displayName: 'Show main branch checkout'
-
-      # Example deployment step
-      - script: |
-          echo "Deploying ${{ parameters.application }} to ${{ parameters.targetServer }}"
-        displayName: 'Deploy Application'
+  # Step 3: Run the container using the entrypoint
+  - script: |
+      echo "Running Docker container..."
+      docker run --rm \
+        --name $(IMAGE_NAME)-container \
+        $(IMAGE_NAME):$(IMAGE_TAG)
+    displayName: "Run Docker container"
